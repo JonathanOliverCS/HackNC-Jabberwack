@@ -1,8 +1,3 @@
-/* AXEBOUND — Phaser 3.90
- * Replace PNG sprite sheets in assets/ without changing this file.
- * All characters: 15 HP. Axe: 5 damage; falling attack: 10 damage.
- * Double jump, slow-motion falling strike, and three consecutive levels.
- */
 const GAME_WIDTH = 640;
 const GAME_HEIGHT = 360;
 const FRAME = 32;
@@ -95,7 +90,7 @@ class Level extends Phaser.Scene {
     const level = LEVELS[this.levelIndex];
     this.cameras.main.setBackgroundColor(level.background);
 
-    // Phaser keeps animations between scene restarts. Register each key only once.
+
     const createAnimation = config => {
       if (!this.anims.exists(config.key)) this.anims.create(config);
     };
@@ -156,7 +151,7 @@ class Level extends Phaser.Scene {
     this.slash.on('animationcomplete-axe-attack', () => this.slash.setVisible(false));
 
     this.status = this.add.text(10, 10, '', { font: '12px monospace', color: '#ffffff' }).setDepth(20);
-    this.help = this.add.text(10, 30, 'A/D Move    SPACE Double Jump    J Axe    H Hitboxes    R Retry', { font: '9px monospace', color: '#bccbe3' }).setDepth(20);
+    this.help = this.add.text(10, 30, 'A/D Move    SPACE Double Jump    J Attack    H Hitboxes    R Retry', { font: '9px monospace', color: '#bccbe3' }).setDepth(20);
     this.message = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 23, '', { font: '21px monospace', color: '#ffe5ae', align: 'center' }).setOrigin(0.5).setDepth(20);
     this.levelTitle = this.add.text(GAME_WIDTH - 9, 53, `LEVEL ${this.levelIndex + 1}/${LEVELS.length}: ${level.name}`, {
       font: '11px monospace', color: '#f2dd9f'
@@ -181,7 +176,7 @@ class Level extends Phaser.Scene {
   }
 
   liveEnemies() {
-    // Snapshot: never iterate a Group's mutable children while destroying sprites.
+
     return this.enemies.getChildren().filter(enemy => enemy && enemy.active && enemy.hp > 0);
   }
 
@@ -203,7 +198,7 @@ class Level extends Phaser.Scene {
     this.moveSlashToPlayer();
   }
 
-  // Called once per new Space press. Allows TWO total jumps before landing.
+  // Allows the player to jump twice in mid-air after each landing
   tryJump() {
     if (this.player.body.blocked.down) this.jumpsUsed = 0;
     if (this.jumpsUsed >= MAX_JUMPS) return false;
@@ -231,7 +226,7 @@ class Level extends Phaser.Scene {
     }
   }
 
-  // Finishing a level automatically loads the next; the third level ends the game.
+    // Finishing a level automatically loads the next; the third level ends the game.
   completeLevel() {
     if (this.won) return;
     this.won = true;
@@ -258,8 +253,7 @@ class Level extends Phaser.Scene {
     const cx = this.player.x;
     const cy = this.player.body.bottom;
     const r2 = ATTACK_RADIUS * ATTACK_RADIUS;
-    // Sampling rectangle corners + interior catches partial overlap; unlike a
-    // center-only check, this can hit the edge of a wide enemy.
+
     for (let ix = 0; ix <= 8; ix++) {
       for (let iy = 0; iy <= 8; iy++) {
         const x = body.left + body.width * ix / 8;
@@ -293,7 +287,7 @@ class Level extends Phaser.Scene {
   }
 
   removeDefeatedEnemy(enemy) {
-    // Called only after all collision checks are complete.
+
     if (enemy.hpBarBack) { enemy.hpBarBack.destroy(); enemy.hpBarBack = null; }
     if (enemy.hpBarFill) { enemy.hpBarFill.destroy(); enemy.hpBarFill = null; }
     this.enemies.remove(enemy, true, true); // Remove from group, destroy sprite/body.
@@ -302,12 +296,12 @@ class Level extends Phaser.Scene {
   updateHud() {
     const remaining = this.liveEnemies().length;
     const slowFall = this.glideUntil > this.time.now && !this.player.body.blocked.down;
-    this.status.setText(`HP: ${this.hp}/${MAX_HP}   Enemies: ${remaining}   Jumps: ${MAX_JUMPS - this.jumpsUsed}/${MAX_JUMPS}   Axe: ${BASE_DAMAGE} / ${BASE_DAMAGE * 2}${slowFall ? '   SLOW FALL!' : ''}`);
+    this.status.setText(`HP: ${this.hp}/${MAX_HP}   Enemies: ${remaining}   Jumps: ${MAX_JUMPS - this.jumpsUsed}/${MAX_JUMPS}   Spell: ${BASE_DAMAGE} / ${BASE_DAMAGE * 2}${slowFall ? '   SLOW FALL!' : ''}`);
   }
 
   update(time) {
     if (Phaser.Input.Keyboard.JustDown(this.keys.R)) {
-      // During the final victory screen, R replays the entire campaign.
+
       const restartLevel = this.won && this.levelIndex === LEVELS.length - 1 ? 0 : this.levelIndex;
       this.scene.restart({ levelIndex: restartLevel });
       return;
